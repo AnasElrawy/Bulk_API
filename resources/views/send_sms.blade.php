@@ -9,14 +9,11 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         .numbers-box {
-            height: 200px;
-            max-height: 400px;
-            
-            overflow-y: auto;
 
+            max-height: 400px;
+            overflow-y: auto;
             border: 1px solid #ccc;
             padding: 10px;
-            margin-top: 20px;
 
         }
         .number-item {
@@ -57,8 +54,8 @@
 <body>
     <div class="container mt-5">
 
-        <form action="{{ route('send.sms') }}" method="POST">
-            @csrf
+        {{-- <form action="{{ route('send.sms') }}" method="POST"> --}}
+            {{-- @csrf --}}
 
         <h1 class="mb-4">Send SMS</h1>
         <div class="row mb-3">
@@ -71,10 +68,10 @@
                 <div class="form-group">
                     <label for="SenderName" class="form-label">Sender Name:</label>
                     <select id="SenderName" name="aa" class="form-control">
-                        <option value="Sender1">Sender 1</option>
-                        <option value="Sender2">Sender 2</option>
-                        <option value="Sender3">Sender 3</option>
-                        <option value="Sender4">Sender 4</option>
+                        <option value="UESystems">UESystems</option>
+                        {{-- <option value="Sender2">Sender 2</option> --}}
+                        {{-- <option value="Sender3">Sender 3</option> --}}
+                        {{-- <option value="Sender4">Sender 4</option> --}}
                     </select>
                 </div>
             </div>
@@ -86,7 +83,9 @@
         </div>
 
 
-        <h4 class="mt-4">Numbers list</h4>
+        {{-- <h4 class="mt-4">Numbers list</h4> --}}
+        <label class="form-label">Numbers list:</label>
+
         <div id="numbersList" name="list" class="numbers-box"></div>
 
         <div class="mb-3 mt-3">
@@ -94,12 +93,12 @@
             <textarea id="Message"  name="message" class="form-control" rows="4" placeholder="Enter your message here"></textarea>
         </div>
 
-        {{-- <button id="sendNumbers" class="btn btn-success mt-4">Send SMS</button> --}}
+        <button id="sendNumbers" class="btn btn-success mt-4">Send SMS</button>
 
 
 
-            <button type="submit">Send SMS</button>
-        </form>
+            {{-- <button type="submit">Send SMS</button> --}}
+        {{-- </form> --}}
         
     </div>
     <script src="{{ asset('js/send_sms.js') }}"></script>

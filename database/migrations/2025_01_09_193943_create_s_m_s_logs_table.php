@@ -13,6 +13,12 @@ return new class extends Migration
     {
         Schema::create('s_m_s_logs', function (Blueprint $table) {
             $table->id();
+ 
+            $table->string('sender_name');
+            $table->text('message');
+            $table->string('phone_number');
+            $table->integer('status');
+            
             $table->timestamps();
         });
     }
