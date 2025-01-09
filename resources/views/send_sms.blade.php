@@ -52,6 +52,8 @@
     </style>
 </head>
 <body>
+    <div id="errorMessages" class="alert alert-danger d-none" role="alert"></div>
+
     <div class="container mt-5">
 
         {{-- <form action="{{ route('send.sms') }}" method="POST"> --}}
@@ -62,6 +64,7 @@
             <div class="col-md-3">
                 <label for="PhoneNumber" class="form-label">Receiver Number:</label>
                 <input type="text" id="PhoneNumber" class="form-control" placeholder="201234567890">
+                <span id="errorPhoneNumber" class="text-danger small"></span>
             </div>
 
             <div class="col-md-3">
@@ -74,6 +77,7 @@
                         {{-- <option value="Sender4">Sender 4</option> --}}
                     </select>
                 </div>
+                <span id="errorSenderName" class="text-danger small"></span>
             </div>
 
             <div class="col-md-3 d-flex align-items-end">
@@ -91,7 +95,12 @@
         <div class="mb-3 mt-3">
             <label for="Message" class="form-label">Message Content:</label>
             <textarea id="Message"  name="message" class="form-control" rows="4" placeholder="Enter your message here"></textarea>
+            <span id="errorMessage" class="text-danger small"></span>
         </div>
+
+        <!-- Success Message -->
+        <div id="successMessage" class="alert alert-success d-none" role="alert"></div>
+
 
         <button id="sendNumbers" class="btn btn-success mt-4">Send SMS</button>
 

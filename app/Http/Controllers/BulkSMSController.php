@@ -14,24 +14,36 @@ class BulkSMSController extends Controller
     public function send(Request $request)
     {
         
-        // dd('aa');
-        // $validated = $request->validate([
-            //     'PhoneNumber' => 'required|string',
-            //     'Message' => 'required|string',
-            //     'SenderName' => 'required|string',
-            //     'OperatorID' => 'required|integer',
-            // ]);
-            
-        $numbers = $request->input('numbers');
-        $message = $request->input('message');
-            
+
+
+           // Validation
+           $validated = $request->validate([
+            'numbers' => 'required|array|min:1', 
+            'numbers.*.phoneNumber' => ['required', 'regex:/^201[0-9]{9}$/'],
+            'numbers.*.senderName' => 'required|string|max:255', 
+            'message' => 'required|string|min:5', 
+        ], [
+            // Custom error messages
+            'numbers.required' => 'Please add at least one phone number.',
+            'numbers.*.phoneNumber.required' => 'Each phone number is required.',
+            'numbers.*.phoneNumber.regex' => 'Each phone number must be 12 digit and in the format 201*********.',
+            'numbers.*.senderName.required' => 'Each sender name is required.',
+            'numbers.*.senderName.max' => 'Sender name cannot exceed 255 characters.',
+            'message.required' => 'Message content is required.',
+            'message.min' => 'The message must be at least 10 characters.',
+            'sender.required' => 'The sender name is required.',
+        ]);
+
+        // After validation, process the data
+        $numbers = $validated['numbers'];
+        $message = $validated['message'];
+
 
         foreach ($numbers as $number) {
 
             $phoneNumber = $number['phoneNumber'];
             $SenderName = $number['senderName'];
             $operatorID = $this->detectOperator($phoneNumber);
-            // dd($phoneNumber);
 
 
             try {
@@ -42,12 +54,10 @@ class BulkSMSController extends Controller
                 $response = Http::withHeaders([
                     'Authorization' => 'c1d7fd97-3587-41e8-853a-e9cb91176197',
                     'Content-Type' => 'application/json',
-                  // ])->post('https://hub.advansystelecom.com/generalapiv12/api/bulkSMS/ForwardSMS', $validated);
                 ])->post('https://hub.advansystelecom.com/generalapiv12/api/bulkSMS/ForwardSMS',
                   [
                     'PhoneNumber' => $phoneNumber,
                     'Message' => $message,
-                    // 'SenderName' => 'UESystems',
                     'SenderName' => $SenderName,
                     'RequestID' => '1',
                     'OperatorID' => 1,
@@ -56,7 +66,6 @@ class BulkSMSController extends Controller
                   );
               
                 $responseCode = $response->json(); 
-                // dd($responseCode);   
                 //   Log the request and response
                 SMSLog::create([
                     'sender_name' => $SenderName,
@@ -64,36 +73,7 @@ class BulkSMSController extends Controller
                     'phone_number' =>  $phoneNumber,
                     'status' => $responseCode,
                 ]);
-                
-                  // // Log the request and response
-                  // SMSLog::create([
-                  //     'phone_number' => $validated['PhoneNumber'],
-                  //     'message' => $validated['Message'],
-                  //     'sender_name' => $validated['SenderName'],
-                  //     'operator_id' => $validated['OperatorID'],
-                  //     'request_id' => $validated['RequestID'],
-                  //     'response_code' => $responseCode,
-                  // ]);
-                //   if ($responseCode == 1) {
-                //       return back()->with('success', 'Message sent successfully!');
-                //   } else {
-                //       // Handle specific error codes
-                //       $errorMessages = [
-                //           -1 => 'Invalid authorization token.',
-                //           -2 => 'Empty mobile number.',
-                //           -3 => 'Empty message.',
-                //           -4 => 'Invalid sender.',
-                //           -5 => 'No credit available for account.',
-                //       ];
-                    
-                //       $errorMessage = $errorMessages[$responseCode] ?? 'An unknown error occurred.';
-                //       return back()->with('error', "Failed to send message. Error: {$errorMessage}");
-                //   }
-                
-
-                // Example SMS sending logic (replace with your actual API call)
-                // Assuming sendSmsToNumber is a method that handles the SMS API
-                // $this->sendSmsToNumber($number, $request->input('message'));
+               
             } catch (Exception $e) {
                 // Log or collect the error for this number
                 $errors[] = [
@@ -102,69 +82,17 @@ class BulkSMSController extends Controller
                 ];
             }
         }
-
-        // dd($numbers[0]['phoneNumber']);
-
-        // try {
-        //     // Send the API request
-        //     $response = Http::withHeaders([
-        //         'Authorization' => 'c1d7fd97-3587-41e8-853a-e9cb91176197',
-        //         'Content-Type' => 'application/json',
-        //     // ])->post('https://hub.advansystelecom.com/generalapiv12/api/bulkSMS/ForwardSMS', $validated);
-        //     ])->post('https://hub.advansystelecom.com/generalapiv12/api/bulkSMS/ForwardSMS',
-        
-        //     [
-        //         'PhoneNumber' => $numbers[0]['phoneNumber'],
-        //         'Message' => $message,
-        //         'SenderName' => 'UESystems',
-        //         'RequestID' => '1',
-        //         'OperatorID' => 1,
-        //     ]
-        
-        //     );
-
-        //     $responseCode = $response->json();
-        //     dd($responseCode);   
-
-        //     // // Log the request and response
-        //     // SMSLog::create([
-        //     //     'phone_number' => $validated['PhoneNumber'],
-        //     //     'message' => $validated['Message'],
-        //     //     'sender_name' => $validated['SenderName'],
-        //     //     'operator_id' => $validated['OperatorID'],
-        //     //     'request_id' => $validated['RequestID'],
-        //     //     'response_code' => $responseCode,
-        //     // ]);
-        //     if ($responseCode == 1) {
-        //         return back()->with('success', 'Message sent successfully!');
-        //     } else {
-        //         // Handle specific error codes
-        //         $errorMessages = [
-        //             -1 => 'Invalid authorization token.',
-        //             -2 => 'Empty mobile number.',
-        //             -3 => 'Empty message.',
-        //             -4 => 'Invalid sender.',
-        //             -5 => 'No credit available for account.',
-        //         ];
-            
-        //         $errorMessage = $errorMessages[$responseCode] ?? 'An unknown error occurred.';
-        //         return back()->with('error', "Failed to send message. Error: {$errorMessage}");
-        //     }
-            
-        // } catch (\Exception $e) {
-        //     return back()->with('error', 'An error occurred: ' . $e->getMessage());
-        // }
     }
 
 
     private function detectOperator($phoneNumber)
     {
         // Check the prefix of the phone number and return the corresponding operator ID
-        if (substr($phoneNumber, 0, 5) == '02010') {
+        if (substr($phoneNumber, 0, 4) == '2010') {
             return 1; // Vodafone
-        } elseif (substr($phoneNumber, 0, 5) == '02012') {
+        } elseif (substr($phoneNumber, 0, 4) == '2012') {
             return 2; // Orange
-        } elseif (substr($phoneNumber, 0, 5) == '02011') {
+        } elseif (substr($phoneNumber, 0, 4) == '2011') {
             return 3; // Etisalat
         } elseif (substr($phoneNumber, 0, 4) == '2015') {
             return 7; // WE

@@ -39,16 +39,7 @@ function removeNumber(phoneNumber) {
     updateNumbersList();
 }
 
-// // Get operator name by ID
-// function getOperatorName(operatorID) {
-//     switch (operatorID) {
-//         case '1': return 'Vodafone';
-//         case '2': return 'Orange';
-//         case '3': return 'Etisalat';
-//         case '7': return 'WE';
-//         default: return 'Unknown';
-//     }
-// }
+
 
 // Clear input fields
 function clearInputs() {
@@ -70,15 +61,42 @@ document.getElementById('sendNumbers').addEventListener('click', function () {
         return;
     }
 
+    // Reset error messages and success message
+    document.getElementById("errorPhoneNumber").textContent = "";
+    document.getElementById("errorSenderName").textContent = "";
+    document.getElementById("errorMessage").textContent = "";
+    document.getElementById("successMessage").classList.add("d-none");
+    
     axios.post('/send-sms', { numbers, message: messageContent })
         .then(response => {
-            alert('Message sent successfully!');
+            // alert('Message sent successfully!');
+            
+            // Show success message
+            const successMessage = document.getElementById("successMessage");
+            successMessage.textContent = "SMS sent successfully!";
+            successMessage.classList.remove("d-none");
+            
             numbers = [];
             updateNumbersList();
             document.getElementById('Message').value = '';
         })
         .catch(error => {
-            alert('Error sending the message.');
-            console.error(error);
+
+            if (error.response && error.response.data.errors) {
+                const errors = error.response.data.errors;
+    
+                // Display errors below relevant fields
+                if (errors['numbers.0.phoneNumber']) {
+                    document.getElementById("errorPhoneNumber").textContent = errors['numbers.0.phoneNumber'][0];
+                }
+                if (errors['numbers.0.senderName']) {
+                    document.getElementById("errorSenderName").textContent = errors['numbers.0.senderName'][0];
+                }
+                if (errors.message) {
+                    document.getElementById("errorMessage").textContent = errors.message[0];
+                }
+            }
+            
+            
         });
 });
