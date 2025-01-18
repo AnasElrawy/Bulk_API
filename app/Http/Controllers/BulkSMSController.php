@@ -21,7 +21,7 @@ class BulkSMSController extends Controller
             'numbers' => 'required|array|min:1', 
             'numbers.*.phoneNumber' => ['required', 'regex:/^201[0-9]{9}$/'],
             'numbers.*.senderName' => 'required|string|max:255', 
-            'message' => 'required|string|min:5', 
+            'message' => 'required|string|min:2', 
         ], [
             // Custom error messages
             'numbers.required' => 'Please add at least one phone number.',
@@ -30,7 +30,7 @@ class BulkSMSController extends Controller
             'numbers.*.senderName.required' => 'Each sender name is required.',
             'numbers.*.senderName.max' => 'Sender name cannot exceed 255 characters.',
             'message.required' => 'Message content is required.',
-            'message.min' => 'The message must be at least 10 characters.',
+            'message.min' => 'The message must be at least 2 characters.',
             'sender.required' => 'The sender name is required.',
         ]);
 
@@ -55,17 +55,20 @@ class BulkSMSController extends Controller
                     'Authorization' => 'c1d7fd97-3587-41e8-853a-e9cb91176197',
                     'Content-Type' => 'application/json',
                 ])->post('https://hub.advansystelecom.com/generalapiv12/api/bulkSMS/ForwardSMS',
-                  [
-                    'PhoneNumber' => $phoneNumber,
-                    'Message' => $message,
-                    'SenderName' => $SenderName,
-                    'RequestID' => '1',
-                    'OperatorID' => 1,
-                  ]
+                    [
+                      'PhoneNumber' => $phoneNumber,
+                      'Message' => $message,
+                      'SenderName' => $SenderName,
+                      'RequestID' => '1',
+                      'OperatorID' => $operatorID,
+                    ]
 
                   );
-              
-                $responseCode = $response->json(); 
+
+                return $response;
+                //   dd($response->json()['Message']);
+
+                $responseCode = $response->json()['Message']; 
                 //   Log the request and response
                 SMSLog::create([
                     'sender_name' => $SenderName,
@@ -73,7 +76,9 @@ class BulkSMSController extends Controller
                     'phone_number' =>  $phoneNumber,
                     'status' => $responseCode,
                 ]);
-               
+
+                return $responseCode;
+
             } catch (Exception $e) {
                 // Log or collect the error for this number
                 $errors[] = [

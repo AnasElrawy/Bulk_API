@@ -9,10 +9,31 @@ document.getElementById('addNumber').addEventListener('click', function () {
     const phoneNumber = document.getElementById('PhoneNumber').value.trim();
     const senderName = document.getElementById('SenderName').value;
 
+    // Clear previous error messages
+    document.getElementById('errorPhoneNumber').textContent = '';
+    document.getElementById('errorSenderName').textContent = '';
+
+    let isValid = true;
+
+    // Validate phone number
+    const phoneNumberRegex = /^201\d{9}$/; // Must start with 201 followed by 9 digits
+    if (!phoneNumberRegex.test(phoneNumber)) {
+        document.getElementById('errorPhoneNumber').textContent = 'Phone number must be 12 digits and in the format 201*********.';
+        isValid = false;
+    }
+
     if (phoneNumber && senderName) {
-        numbers.push({ phoneNumber,  senderName });
-        updateNumbersList();
-        clearInputs();
+
+        if (isValid) {
+            // Add to the list if validation passes
+            numbers.push({ phoneNumber, senderName });
+            updateNumbersList();
+            clearInputs();
+        }
+
+        // numbers.push({ phoneNumber,  senderName });
+        // updateNumbersList();
+        // clearInputs();
     } else {
         alert('Please fill out all fields.');
     }
@@ -44,8 +65,18 @@ function removeNumber(phoneNumber) {
 // Clear input fields
 function clearInputs() {
     document.getElementById('PhoneNumber').value = '';
-    document.getElementById('SenderName').value = 'Sender1';
+    document.getElementById('SenderName').value = 'UESystems';
 }
+
+// Reset error messages and success message
+function ResetErrorMessages() {
+
+    document.getElementById("errorPhoneNumber").textContent = "";
+    document.getElementById("errorSenderName").textContent = "";
+    document.getElementById("errorMessage").textContent = "";
+    document.getElementById("errorNumbersList").textContent = "";
+
+} 
 
 // Handle sending all numbers to the backend
 document.getElementById('sendNumbers').addEventListener('click', function () {
@@ -58,27 +89,48 @@ document.getElementById('sendNumbers').addEventListener('click', function () {
 
     if (!messageContent) {
         alert('Please enter the message content.');
+        document.getElementById("errorMessage").textContent = "The message must be at least 2 characters.";
         return;
     }
 
     // Reset error messages and success message
-    document.getElementById("errorPhoneNumber").textContent = "";
-    document.getElementById("errorSenderName").textContent = "";
-    document.getElementById("errorMessage").textContent = "";
+    ResetErrorMessages();
+
+    //Reset success Message 
     document.getElementById("successMessage").classList.add("d-none");
-    
+
+
     axios.post('/send-sms', { numbers, message: messageContent })
         .then(response => {
             // alert('Message sent successfully!');
-            
+            console.log(response.data);
             // Show success message
-            const successMessage = document.getElementById("successMessage");
-            successMessage.textContent = "SMS sent successfully!";
-            successMessage.classList.remove("d-none");
-            
-            numbers = [];
-            updateNumbersList();
-            document.getElementById('Message').value = '';
+            if (response.data == "1") {
+
+                const successMessage = document.getElementById("successMessage");
+                successMessage.textContent = "SMS sent successfully!";
+                successMessage.classList.remove("d-none");
+
+                // Remove the message after 3 seconds (3000 milliseconds)
+                setTimeout(() => {
+                    successMessage.classList.add("d-none");
+                }, 3000);
+                
+                numbers = [];
+                updateNumbersList();
+                document.getElementById('Message').value = '';
+            }
+            else {
+
+                const failedMessage = document.getElementById("failedMessage");
+                failedMessage.textContent = "Failed to send SMS";
+                failedMessage.classList.remove("d-none");
+                
+                // Remove the message after 3 seconds (3000 milliseconds)
+                setTimeout(() => {
+                    failedMessage.classList.add("d-none");
+                }, 3000);
+            }
         })
         .catch(error => {
 
@@ -88,6 +140,7 @@ document.getElementById('sendNumbers').addEventListener('click', function () {
                 // Display errors below relevant fields
                 if (errors['numbers.0.phoneNumber']) {
                     document.getElementById("errorPhoneNumber").textContent = errors['numbers.0.phoneNumber'][0];
+                    document.getElementById("errorNumbersList").textContent = 'You should remove the wrong phone number from list.';
                 }
                 if (errors['numbers.0.senderName']) {
                     document.getElementById("errorSenderName").textContent = errors['numbers.0.senderName'][0];

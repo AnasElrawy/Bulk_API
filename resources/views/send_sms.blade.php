@@ -89,8 +89,9 @@
 
         {{-- <h4 class="mt-4">Numbers list</h4> --}}
         <label class="form-label">Numbers list:</label>
-
         <div id="numbersList" name="list" class="numbers-box"></div>
+        <span id="errorNumbersList" class="text-danger small"></span>
+
 
         <div class="mb-3 mt-3">
             <label for="Message" class="form-label">Message Content:</label>
@@ -100,6 +101,7 @@
 
         <!-- Success Message -->
         <div id="successMessage" class="alert alert-success d-none" role="alert"></div>
+        <div id="failedMessage" class="alert alert-danger d-none" role="alert"></div>
 
 
         <button id="sendNumbers" class="btn btn-success mt-4">Send SMS</button>
